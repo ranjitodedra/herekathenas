@@ -1,0 +1,8 @@
+# Keep deploy artifacts small when using setup:dev (full tree)
+.git
+.next/cache
+.DS_Store
+*.md
+docs
+.env*
+node_modules/.cache

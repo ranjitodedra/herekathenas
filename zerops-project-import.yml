@@ -1,0 +1,21 @@
+# Paste into Zerops → Import project
+# https://app.zerops.io/
+#
+# After import:
+# 1. Set env secrets on the `app` service (see README → Deploy on Zerops)
+# 2. Connect this Git repo under Pipelines & CI/CD (or push with zcli)
+# 3. Enable public access / subdomain if not already on
+
+project:
+  name: here-kathenas
+  tags:
+    - here-kathenas
+    - hackathon
+
+services:
+  - hostname: app
+    type: nodejs@22
+    zeropsSetup: prod
+    enableSubdomainAccess: true
+    minContainers: 1
+    maxContainers: 3

@@ -1,0 +1,93 @@
+# Here Kathenas — Zerops build / deploy / run config
+# https://docs.zerops.io/zerops-yaml/specification
+#
+# Set these on the Zerops `app` service (Environment variables / secrets)
+# before the first deploy. They are injected into build + runtime automatically:
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
+#   PHONE_HASH_PEPPER
+
+zerops:
+  # Production: Next.js standalone SSR on Node.js 22
+  - setup: prod
+    build:
+      base: nodejs@22
+      buildCommands:
+        - npm ci
+        - npm run build
+        # Standalone does not include static assets; copy them next to server.js
+        - mkdir -p .next/standalone/.next
+        - cp -r .next/static .next/standalone/.next/static
+        - cp -r public .next/standalone/public
+      deployFiles:
+        - .next/standalone
+        - .next/static
+        - public
+      cache:
+        # Do NOT cache .next/cache on Zerops (EACCES on later builds)
+        - node_modules
+    deploy:
+      readinessCheck:
+        httpGet:
+          port: 3000
+          path: /api/health
+    run:
+      base: nodejs@22
+      ports:
+        - port: 3000
+          httpSupport: true
+      envVariables:
+        NODE_ENV: production
+      # PORT is injected by Zerops; Next standalone server.js honors it
+      start: node .next/standalone/server.js
+
+  # Alias used when import yaml sets zeropsSetup: app
+  - setup: app
+    build:
+      base: nodejs@22
+      buildCommands:
+        - npm ci
+        - npm run build
+        - mkdir -p .next/standalone/.next
+        - cp -r .next/static .next/standalone/.next/static
+        - cp -r public .next/standalone/public
+      deployFiles:
+        - .next/standalone
+        - .next/static
+        - public
+      cache:
+        - node_modules
+    deploy:
+      readinessCheck:
+        httpGet:
+          port: 3000
+          path: /api/health
+    run:
+      base: nodejs@22
+      ports:
+        - port: 3000
+          httpSupport: true
+      envVariables:
+        NODE_ENV: production
+      start: node .next/standalone/server.js
+
+  # Dev workspace: full tree for SSH + `npm run dev`
+  - setup: dev
+    build:
+      base: nodejs@22
+      os: ubuntu
+      buildCommands:
+        - npm install
+      deployFiles: ./
+      cache:
+        - node_modules
+    run:
+      base: nodejs@22
+      os: ubuntu
+      ports:
+        - port: 3000
+          httpSupport: true
+      envVariables:
+        NODE_ENV: development
+      start: zsc noop --silent
