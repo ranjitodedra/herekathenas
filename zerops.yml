@@ -9,10 +9,10 @@
 #   PHONE_HASH_PEPPER
 
 zerops:
-  # Production: Next.js standalone SSR on Node.js 22
+  # Production: Next.js standalone SSR on Ubuntu Node.js 22
   - setup: prod
     build:
-      base: nodejs@22
+      base: ubuntu/nodejs@22
       buildCommands:
         - npm ci
         - npm run build
@@ -33,7 +33,7 @@ zerops:
           port: 3000
           path: /api/health
     run:
-      base: nodejs@22
+      base: ubuntu/nodejs@22
       ports:
         - port: 3000
           httpSupport: true
@@ -42,10 +42,10 @@ zerops:
       # PORT is injected by Zerops; Next standalone server.js honors it
       start: node .next/standalone/server.js
 
-  # Alias used when import yaml sets zeropsSetup: app
+  # Matches Zerops service hostname `app` (ubuntu/nodejs@22)
   - setup: app
     build:
-      base: nodejs@22
+      base: ubuntu/nodejs@22
       buildCommands:
         - npm ci
         - npm run build
@@ -64,7 +64,7 @@ zerops:
           port: 3000
           path: /api/health
     run:
-      base: nodejs@22
+      base: ubuntu/nodejs@22
       ports:
         - port: 3000
           httpSupport: true

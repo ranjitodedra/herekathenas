@@ -1,21 +1,22 @@
-# Paste into Zerops → Import project
-# https://app.zerops.io/
+# Paste into Zerops → existing project → Import services
+# (Do NOT include a `project:` block — that is only for creating a NEW project.)
 #
 # After import:
-# 1. Set env secrets on the `app` service (see README → Deploy on Zerops)
-# 2. Connect this Git repo under Pipelines & CI/CD (or push with zcli)
-# 3. Enable public access / subdomain if not already on
-
-project:
-  name: here-kathenas
-  tags:
-    - here-kathenas
-    - hackathon
+# 1. Set env secrets on the `app` service
+# 2. If buildFromGit did not wire CI/CD, connect GitHub under Pipelines & CI/CD
+# 3. Confirm public subdomain access is on
+#
+# Env vars to set on `app` before / right after first build:
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
+#   PHONE_HASH_PEPPER
 
 services:
   - hostname: app
-    type: nodejs@22
-    zeropsSetup: prod
+    type: ubuntu/nodejs@22
+    zeropsSetup: app
+    buildFromGit: https://github.com/ranjitodedra/herekathenas
     enableSubdomainAccess: true
     minContainers: 1
     maxContainers: 3
