@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { normalizeAndHashPhone } from "@/lib/phone";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -12,13 +11,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const phoneHash = String(user.user_metadata?.phone_hash ?? "").trim();
+  if (!phoneHash) {
+    return NextResponse.json(
+      { error: "Phone identity missing. Sign in again with your phone number." },
+      { status: 400 },
+    );
+  }
+
   const body = await request.json();
   const displayName = String(body.displayName ?? "").trim();
   const username = String(body.username ?? "")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9_]/g, "");
-  const phoneRaw = String(body.phone ?? "").trim();
   const skipImport = Boolean(body.skipImport);
 
   if (!displayName || displayName.length < 2) {
@@ -27,14 +33,6 @@ export async function POST(request: Request) {
   if (!username || username.length < 3) {
     return NextResponse.json(
       { error: "Username must be at least 3 characters (a-z, 0-9, _)" },
-      { status: 400 },
-    );
-  }
-
-  const phone = normalizeAndHashPhone(phoneRaw);
-  if (!phone) {
-    return NextResponse.json(
-      { error: "Enter a valid phone number with country code (E.164)" },
       { status: 400 },
     );
   }
@@ -48,7 +46,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (existingProfile) {
-    return NextResponse.json({ ok: true, alreadyOnboarded: true });
+    return NextResponse.json({ ok: true, alreadyOnboarded: true, next: "/dashboard" });
   }
 
   const { data: usernameTaken } = await service
@@ -65,7 +63,7 @@ export async function POST(request: Request) {
   const { data: matchPerson } = await service
     .from("persons")
     .select("id, claimed")
-    .eq("phone_hash", phone.hash)
+    .eq("phone_hash", phoneHash)
     .maybeSingle();
 
   let personId: string;
@@ -80,7 +78,7 @@ export async function POST(request: Request) {
     personId = matchPerson.id;
     const { error: claimError } = await service
       .from("persons")
-      .update({ claimed: true, phone_hash: phone.hash })
+      .update({ claimed: true, phone_hash: phoneHash })
       .eq("id", personId);
     if (claimError) {
       return NextResponse.json({ error: claimError.message }, { status: 500 });
@@ -88,7 +86,7 @@ export async function POST(request: Request) {
   } else {
     const { data: newPerson, error: personError } = await service
       .from("persons")
-      .insert({ phone_hash: phone.hash, claimed: true })
+      .insert({ phone_hash: phoneHash, claimed: true })
       .select("id")
       .single();
     if (personError || !newPerson) {

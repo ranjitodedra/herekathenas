@@ -114,7 +114,7 @@ export default async function HomePage() {
             },
             {
               title: "Claim identities",
-              body: "When someone joins with a matching phone, their anonymous node becomes a real profile.",
+              body: "When someone joins with a matching phone number, their anonymous node becomes a real profile.",
             },
             {
               title: "Find paths",

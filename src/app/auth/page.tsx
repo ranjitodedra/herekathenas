@@ -1,36 +1,35 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BrandMark } from "@/components/BrandMark";
-import { createClient } from "@/lib/supabase/client";
 
 export default function AuthPage() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const router = useRouter();
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [message, setMessage] = useState("");
 
-  async function sendMagicLink(e: React.FormEvent) {
+  async function signInWithPhone(e: React.FormEvent) {
     e.preventDefault();
     setStatus("loading");
     setMessage("");
 
-    const supabase = createClient();
-    const origin = window.location.origin;
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
+    const res = await fetch("/api/auth/phone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phone.trim() }),
     });
+    const data = await res.json();
 
-    if (error) {
+    if (!res.ok) {
       setStatus("error");
-      setMessage(error.message);
+      setMessage(data.error ?? "Could not sign in");
       return;
     }
 
-    setStatus("sent");
-    setMessage("Check your email for a sign-in link.");
+    router.push(data.next ?? "/onboarding");
+    router.refresh();
   }
 
   return (
@@ -38,33 +37,30 @@ export default function AuthPage() {
       <BrandMark size="md" className="mb-8" />
       <h1 className="font-display text-4xl leading-tight">Sign in</h1>
       <p className="mt-2 text-sm text-ink/65">
-        Sign in with an email magic link. At onboarding we ask for your phone number so we
-        can match contacts (we store a hash, not the number).
+        Use your phone number to create an account or sign back in. We store a salted hash for
+        contact matching, not your raw number. No email or SMS codes.
       </p>
 
-      {status === "sent" ? (
-        <div className="panel mt-8 rounded-2xl p-5 text-sm leading-relaxed">{message}</div>
-      ) : (
-        <form onSubmit={sendMagicLink} className="mt-8 space-y-4">
-          <label className="block text-sm font-medium">
-            Email
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field mt-1.5"
-              placeholder="you@example.com"
-            />
-          </label>
-          {status === "error" ? (
-            <p className="text-sm text-[var(--coral-deep)]">{message}</p>
-          ) : null}
-          <button type="submit" disabled={status === "loading"} className="btn-primary w-full">
-            {status === "loading" ? "Sending…" : "Email me a link"}
-          </button>
-        </form>
-      )}
+      <form onSubmit={signInWithPhone} className="mt-8 space-y-4">
+        <label className="block text-sm font-medium">
+          Phone number
+          <input
+            type="tel"
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="input-field mt-1.5"
+            placeholder="+1 519 123 4567"
+            autoComplete="tel"
+          />
+        </label>
+        {status === "error" ? (
+          <p className="text-sm text-[var(--coral-deep)]">{message}</p>
+        ) : null}
+        <button type="submit" disabled={status === "loading"} className="btn-primary w-full">
+          {status === "loading" ? "Signing in…" : "Continue with phone"}
+        </button>
+      </form>
     </div>
   );
 }

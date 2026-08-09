@@ -9,7 +9,6 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
-  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +18,7 @@ export default function OnboardingPage() {
     const res = await fetch("/api/onboarding", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ displayName, username, phone, skipImport }),
+      body: JSON.stringify({ displayName, username, skipImport }),
     });
     const data = await res.json();
     setLoading(false);
@@ -67,37 +66,12 @@ export default function OnboardingPage() {
               placeholder="ranjit"
             />
           </label>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={displayName.trim().length < 2 || username.trim().length < 3}
-            onClick={() => setStep(3)}
-          >
-            Continue
-          </button>
-        </div>
-      ) : null}
-
-      {step === 3 ? (
-        <div className="mt-8 space-y-4">
-          <h1 className="font-display text-4xl">Link your phone number</h1>
-          <p className="text-sm text-ink/65">
-            Used to match contacts and claim your node. We store a salted hash only, not
-            your raw number. SMS OTP is not required in this experiment; you&apos;ll see
-            &quot;Phone linked&quot; on your profile once this step succeeds.
-          </p>
-          <input
-            className="input-field"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+1 519 123 4567"
-          />
           {error ? <p className="text-sm text-[var(--coral-deep)]">{error}</p> : null}
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               className="btn-primary"
-              disabled={loading || !phone.trim()}
+              disabled={loading || displayName.trim().length < 2 || username.trim().length < 3}
               onClick={() => complete(false)}
             >
               {loading ? "Saving…" : "Continue to import"}
@@ -105,7 +79,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               className="btn-secondary"
-              disabled={loading || !phone.trim()}
+              disabled={loading || displayName.trim().length < 2 || username.trim().length < 3}
               onClick={() => complete(true)}
             >
               Skip import
