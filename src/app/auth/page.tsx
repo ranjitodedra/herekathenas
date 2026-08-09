@@ -30,7 +30,7 @@ export default function AuthPage() {
     }
 
     setStatus("sent");
-    setMessage("Check your email for a sign-in link. (Local Supabase: open Inbucket at http://127.0.0.1:54324)");
+    setMessage("Check your email for a sign-in link.");
   }
 
   return (
@@ -38,8 +38,8 @@ export default function AuthPage() {
       <BrandMark size="md" className="mb-8" />
       <h1 className="font-display text-4xl leading-tight">Sign in</h1>
       <p className="mt-2 text-sm text-ink/65">
-        Free experiment stack uses email magic links (no SMS cost). Phone numbers are
-        collected at onboarding for contact matching.
+        Sign in with an email magic link. At onboarding we ask for your phone number so we
+        can match contacts (we store a hash, not the number).
       </p>
 
       {status === "sent" ? (

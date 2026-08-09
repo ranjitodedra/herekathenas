@@ -7,6 +7,7 @@
 #   NEXT_PUBLIC_SUPABASE_ANON_KEY
 #   SUPABASE_SERVICE_ROLE_KEY
 #   PHONE_HASH_PEPPER
+#   NEXT_PUBLIC_APP_URL=https://app-211-3000.ny1.zerops.app
 
 zerops:
   # Production: Next.js standalone SSR on Ubuntu Node.js 22
