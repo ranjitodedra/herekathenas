@@ -40,7 +40,8 @@ zerops:
           httpSupport: true
       envVariables:
         NODE_ENV: production
-      # PORT is injected by Zerops; Next standalone server.js honors it
+        HOSTNAME: "0.0.0.0"
+        PORT: "3000"
       start: node .next/standalone/server.js
 
   # Matches Zerops service hostname `app` (ubuntu/nodejs@22)
@@ -71,6 +72,8 @@ zerops:
           httpSupport: true
       envVariables:
         NODE_ENV: production
+        HOSTNAME: "0.0.0.0"
+        PORT: "3000"
       start: node .next/standalone/server.js
 
   # Dev workspace: full tree for SSH + `npm run dev`
